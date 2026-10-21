@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="PhishAware — web edukasi interaktif untuk mengenali pesan phishing.">
+  <title>PhishAware | Kenali Phishing</title>
+  <style>
+    :root {
+      --bg: #f4f7fb; --surface: #ffffff; --ink: #172033; --muted: #667085;
+      --primary: #3157d5; --primary-dark: #2443ad; --line: #e2e8f0;
+      --good: #16794b; --good-bg: #e9f8ef; --bad: #b42318; --bad-bg: #fff0ee;
+      --warning: #8a5700; --warning-bg: #fff5d8; --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.55; }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    .wrap { width: min(1080px, calc(100% - 32px)); margin: auto; }
+    header { background: linear-gradient(125deg, #14285f, #3157d5 70%, #5c7cf0); color: white; padding: 24px 0 54px; }
+    .nav { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .brand { font-size: 1.2rem; font-weight: 850; letter-spacing: -.4px; }
+    .brand span { color: #b8f3d0; }
+    .tag { border: 1px solid #ffffff55; padding: 6px 11px; border-radius: 999px; font-size: .8rem; }
+    .hero { display: grid; grid-template-columns: 1.5fr .8fr; gap: 30px; align-items: center; padding-top: 42px; }
+    h1 { font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.08; margin: 0 0 16px; letter-spacing: -1.5px; }
+    .hero p { color: #e1e8ff; max-width: 650px; margin: 0 0 22px; }
+    .hero-card { background: #ffffff14; border: 1px solid #ffffff35; padding: 22px; border-radius: 22px; backdrop-filter: blur(5px); }
+    .hero-card .shield { font-size: 2.6rem; }
+    .hero-card strong { display: block; font-size: 1.08rem; margin: 8px 0; }
+    .hero-card small { color: #e1e8ff; }
+    .btn { border: 0; background: var(--primary); color: white; border-radius: 11px; padding: 11px 16px; font-weight: 750; transition: .15s; }
+    .btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+    .btn.light { background: white; color: var(--primary-dark); }
+    .btn.light:hover { background: #edf1ff; }
+    .btn.outline { background: transparent; color: var(--primary); border: 1px solid #c8d2fa; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    main { padding: 28px 0 60px; }
+    .tabs { display: flex; gap: 8px; overflow-x: auto; padding: 6px; background: #e9edf6; border-radius: 14px; margin-top: -52px; position: relative; }
+    .tab { border: 0; border-radius: 10px; padding: 11px 15px; background: transparent; color: #46516b; font-weight: 750; white-space: nowrap; }
+    .tab.active { background: white; color: var(--primary-dark); box-shadow: 0 2px 8px #182b5010; }
+    .panel { display: none; padding-top: 28px; }
+    .panel.active { display: block; }
+    .section-head { margin-bottom: 20px; }
+    .section-head h2 { margin: 0 0 5px; font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: -.5px; }
+    .section-head p { color: var(--muted); margin: 0; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; box-shadow: 0 5px 20px #14213d06; }
+    .icon { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 13px; background: #edf1ff; font-size: 1.3rem; margin-bottom: 12px; }
+    .card h3 { margin: 0 0 8px; font-size: 1.05rem; }
+    .card p { margin: 0; color: var(--muted); font-size: .94rem; }
+    .notice { margin-top: 18px; border-radius: 14px; padding: 14px 16px; background: var(--warning-bg); color: var(--warning); font-size: .92rem; }
+    .quiz-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 18px; align-items: start; }
+    .quiz-card { background: white; border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(18px, 4vw, 28px); }
+    .quiz-top { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-size: .9rem; }
+    .progress { height: 7px; background: #e9edf6; border-radius: 99px; overflow: hidden; margin: 12px 0 24px; }
+    .progress span { display: block; height: 100%; width: 0; background: var(--primary); transition: width .2s; }
+    .message { background: #f8faff; border: 1px solid #dfe6fb; padding: 18px; border-radius: 14px; margin: 18px 0; }
+    .message .sender { font-weight: 800; }
+    .message .meta { color: var(--muted); font-size: .85rem; margin: 3px 0 12px; }
+    .message .body { white-space: pre-line; }
+    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 18px 0; }
+    .option { border: 1px solid #d8deeb; background: white; border-radius: 12px; padding: 13px; text-align: left; font-weight: 750; }
+    .option:hover { border-color: var(--primary); background: #f8faff; }
+    .option.selected { border-color: var(--primary); box-shadow: 0 0 0 2px #3157d522; }
+    .option:disabled { cursor: default; }
+    .feedback { display: none; padding: 14px; border-radius: 12px; margin: 14px 0; }
+    .feedback.show { display: block; }
+    .feedback.good { background: var(--good-bg); color: var(--good); }
+    .feedback.bad { background: var(--bad-bg); color: var(--bad); }
+    .quiz-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 18px; }
+    .side-card { background: white; border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
+    .side-card h3 { margin-top: 0; }
+    .side-card ul { padding-left: 20px; color: var(--muted); font-size: .92rem; }
+    .side-card li { margin: 8px 0; }
+    .score { font-size: 2.8rem; font-weight: 900; letter-spacing: -1px; color: var(--primary); }
+    .result { display: none; }
+    .result.show { display: block; }
+    .result-box { text-align: center; background: white; border: 1px solid var(--line); border-radius: var(--radius); padding: 30px 20px; }
+    .result-box h3 { margin: 0; font-size: 1.5rem; }
+    .result-box p { color: var(--muted); }
+    .result-list { text-align: left; max-width: 680px; margin: 24px auto; }
+    .result-list li { margin: 8px 0; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    label { display: block; font-weight: 750; margin-bottom: 6px; }
+    input[type="text"], input[type="number"], select { width: 100%; border: 1px solid #cfd7e6; border-radius: 10px; padding: 11px 12px; background: white; color: var(--ink); }
+    .criteria { display: grid; gap: 12px; margin: 18px 0; }
+    .criterion { display: flex; align-items: start; gap: 10px; background: #f8faff; border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+    .criterion input { margin-top: 5px; accent-color: var(--primary); }
+    .criterion small { display: block; color: var(--muted); font-weight: 400; }
+    .score-card { display: none; margin-top: 20px; }
+    .score-card.show { display: block; }
+    .score-meter { height: 10px; background: #e9edf6; border-radius: 99px; overflow: hidden; margin: 12px 0; }
+    .score-meter span { display: block; height: 100%; background: var(--primary); width: 0; }
+    .footer { border-top: 1px solid var(--line); padding: 22px 0; color: var(--muted); font-size: .88rem; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 15px; flex-wrap: wrap; }
+    .small { color: var(--muted); font-size: .88rem; }
+    @media (max-width: 760px) {
+      .hero { grid-template-columns: 1fr; padding-top: 30px; }
+      .hero-card { display: none; }
+      .grid { grid-template-columns: 1fr; }
+      .quiz-layout { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .options { grid-template-columns: 1fr; }
+      .tag { display: none; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="nav">
+      <div class="brand">Phish<span>Aware</span></div>
+      <div class="tag">Edukasi Keamanan Digital</div>
+    </div>
+    <div class="hero">
+      <div>
+        <h1>Berhenti sejenak.<br>Periksa sebelum klik.</h1>
+        <p>Pelajari cara mengenali pesan mencurigakan melalui contoh simulasi, kuis singkat, dan penjelasan yang mudah dipahami.</p>
+        <button class="btn light" onclick="showTab('quiz')">Mulai kuis <span aria-hidden="true">→</span></button>
+      </div>
+      <div class="hero-card">
+        <div class="shield">🛡️</div>
+        <strong>Kenali tanda, bukan hanya tampilan.</strong>
+        <small>Pesan yang terlihat resmi tetap perlu diperiksa melalui kanal resmi.</small>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="tabs" aria-label="Navigasi utama">
+    <button class="tab active" data-tab="learn" onclick="showTab('learn')">Belajar</button>
+    <button class="tab" data-tab="quiz" onclick="showTab('quiz')">Kuis interaktif</button>
+    <button class="tab" data-tab="assess" onclick="showTab('assess')">Periksa klaim pesan</button>
+    <button class="tab" data-tab="progress" onclick="showTab('progress')">Hasil saya</button>
+  </nav>
+
+  <section class="panel active" id="learn">
+    <div class="section-head">
+      <h2>Phishing itu apa?</h2>
+      <p>Phishing adalah upaya menipu seseorang agar menyerahkan informasi sensitif, membuka tautan berbahaya, atau melakukan tindakan tertentu.</p>
+    </div>
+    <div class="grid">
+      <article class="card"><div class="icon">⏳</div><h3>Desakan berlebihan</h3><p>Pesan meminta tindakan segera, misalnya akun akan ditutup jika tidak merespons dalam beberapa menit.</p></article>
+      <article class="card"><div class="icon">🔗</div><h3>Tautan tidak wajar</h3><p>Alamat situs tidak sesuai dengan domain resmi atau memakai ejaan yang menyerupai nama organisasi.</p></article>
+      <article class="card"><div class="icon">🔐</div><h3>Meminta data rahasia</h3><p>Pesan meminta kata sandi, PIN, kode OTP, atau data pribadi melalui kanal yang tidak semestinya.</p></article>
+    </div>
+    <div class="notice"><strong>Ingat:</strong> satu tanda saja tidak selalu membuktikan phishing. Periksa konteks, alamat pengirim, tujuan tautan, dan konfirmasi lewat kanal resmi. Jangan mengklik tautan mencurigakan untuk mengujinya.</div>
+    <div style="margin-top:20px"><button class="btn" onclick="showTab('quiz')">Uji pemahaman saya →</button></div>
+  </section>
+
+  <section class="panel" id="quiz">
+    <div class="section-head">
+      <h2>Kuis identifikasi pesan</h2>
+      <p>Semua contoh di bawah adalah simulasi fiktif. Pilih penilaian terbaik berdasarkan informasi yang tersedia.</p>
+    </div>
+    <div class="quiz-layout">
+      <div class="quiz-card" id="quizArea">
+        <div class="quiz-top"><span id="quizMode">Latihan</span><span id="counter">Soal 1 dari 6</span></div>
+        <div class="progress"><span id="progressBar"></span></div>
+        <div id="questionArea"></div>
+        <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+        <div class="quiz-actions">
+          <button class="btn outline" onclick="restartQuiz()">Ulangi</button>
+          <button class="btn" id="nextBtn" onclick="nextQuestion()" disabled>Jawaban berikutnya →</button>
+        </div>
+      </div>
+      <aside class="side-card">
+        <h3>Checklist cepat</h3>
+        <ul>
+          <li>Periksa alamat pengirim dengan teliti.</li>
+          <li>Jangan terburu-buru karena ancaman atau hadiah.</li>
+          <li>Jangan pernah membagikan OTP atau kata sandi.</li>
+          <li>Buka situs resmi secara mandiri, bukan dari tautan pesan.</li>
+          <li>Laporkan pesan mencurigakan melalui kanal resmi.</li>
+        </ul>
+        <p class="small">Kuis ini untuk edukasi, bukan alat pendeteksi otomatis atau pengganti pemeriksaan keamanan.</p>
+      </aside>
+    </div>
+    <div class="result" id="quizResult"></div>
+  </section>
+
+  <section class="panel" id="assess">
+    <div class="section-head">
+      <h2>Periksa indikator pesan</h2>
+      <p>Gunakan daftar ini untuk menilai apakah pesan perlu diverifikasi lebih lanjut. Alat ini tidak mengirim atau memeriksa pesan ke server.</p>
+    </div>
+    <div class="card">
+      <div class="form-grid">
+        <div><label for="sender">Nama pengirim (opsional)</label><input id="sender" type="text" placeholder="Contoh: Layanan Akun"></div>
+        <div><label for="channel">Kanal pesan</label><select id="channel"><option>SMS</option><option>WhatsApp</option><option>Email</option><option>Media sosial</option><option>Lainnya</option></select></div>
+      </div>
+      <div class="criteria">
+        <label class="criterion"><input type="checkbox" class="risk" value="20"><span>Pesan mendesak atau mengancam<small>Contoh: akun ditutup segera jika tidak bertindak.</small></span></label>
+        <label class="criterion"><input type="checkbox" class="risk" value="25"><span>Meminta kata sandi, PIN, atau kode OTP<small>Jangan pernah membagikan kode rahasia melalui pesan.</small></span></label>
+        <label class="criterion"><input type="checkbox" class="risk" value="20"><span>Alamat tautan atau domain terasa tidak wajar<small>Jangan membuka tautan untuk memeriksanya.</small></span></label>
+        <label class="criterion"><input type="checkbox" class="risk" value="15"><span>Pengirim tidak dikenal atau identitasnya sulit diverifikasi<small>Nama tampilan dapat dipalsukan.</small></span></label>
+        <label class="criterion"><input type="checkbox" class="risk" value="10"><span>Menawarkan hadiah yang tidak diharapkan<small>Terutama jika meminta biaya atau data pribadi.</small></span></label>
+        <label class="criterion"><input type="checkbox" class="risk" value="10"><span>Meminta mengunduh file atau memasang aplikasi tak terduga<small>Jangan membuka lampiran yang tidak diharapkan.</small></span></label>
+      </div>
+      <button class="btn" onclick="assessMessage()">Tampilkan hasil pemeriksaan</button>
+      <div class="score-card card" id="assessmentResult" aria-live="polite"></div>
+      <p class="small">Skor ini adalah indikator edukasi buatan prototipe, bukan model yang telah tervalidasi secara ilmiah. Hasil rendah tidak menjamin pesan aman.</p>
+    </div>
+  </section>
+
+  <section class="panel" id="progress">
+    <div class="section-head">
+      <h2>Hasil latihan</h2>
+      <p>Skor latihan disimpan di browser perangkat ini saja. Data tidak dikirim ke server.</p>
+    </div>
+    <div class="grid">
+      <article class="card"><div class="icon">📝</div><h3>Skor terakhir</h3><div class="score" id="lastScore">—</div><p id="lastScoreText">Selesaikan kuis untuk melihat skor.</p></article>
+      <article class="card"><div class="icon">📈</div><h3>Skor terbaik</h3><div class="score" id="bestScore">—</div><p>Skor tertinggi pada browser ini.</p></article>
+      <article class="card"><div class="icon">🔎</div><h3>Jumlah latihan</h3><div class="score" id="attempts">0</div><p>Total penyelesaian kuis pada browser ini.</p></article>
+    </div>
+    <div class="notice">Untuk penelitian pretest–posttest, catat skor peserta secara terpisah dengan persetujuan mereka. Prototipe ini tidak menyediakan pengumpulan data terpusat dan tidak mengidentifikasi peserta.</div>
+    <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" onclick="showTab('quiz')">Mulai latihan</button><button class="btn outline" onclick="clearResults()">Hapus hasil lokal</button></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <span><strong>PhishAware</strong> · Prototipe edukasi keamanan digital</span>
+    <span>Contoh pesan bersifat fiktif · Tidak ada data yang dikirim ke server</span>
+  </div>
+</footer>
+
+<script>
+  const questions = [
+    {sender:"Admin Hadiah",meta:"SMS · Contoh fiktif",body:"SELAMAT! Anda mendapat hadiah yang tidak pernah diikuti. Klaim sekarang dan masukkan PIN untuk memproses hadiah.",options:["Kemungkinan mencurigakan","Pasti aman"],answer:0,why:"Hadiah yang tidak diharapkan dan permintaan PIN adalah tanda bahaya. Jangan berikan PIN; verifikasi secara mandiri melalui kanal resmi."},
+    {sender:"Layanan Akun",meta:"Email · Contoh fiktif",body:"Akun Anda akan dinonaktifkan dalam 10 menit. Segera masuk melalui tautan pada pesan ini agar akun tetap aktif.",options:["Kemungkinan mencurigakan","Pasti aman"],answer:0,why:"Desakan waktu dan ancaman penonaktifan dapat digunakan untuk membuat penerima panik. Buka situs resmi secara mandiri untuk memeriksa status akun."},
+    {sender:"Dosen",meta:"Pesan · Contoh fiktif",body:"Halo, materi kuliah sudah tersedia di LMS kampus. Silakan buka aplikasi atau situs LMS yang biasa digunakan untuk melihatnya.",options:["Relatif wajar, tetap verifikasi bila ragu","Pasti phishing"],answer:0,why:"Pesan ini tidak meminta data rahasia atau menyertakan tautan asing. Namun, identitas pengirim tetap perlu diperiksa bila pesan tidak sesuai konteks."},
+    {sender:"Pusat Bantuan",meta:"WhatsApp · Contoh fiktif",body:"Untuk membantu kendala akun, kirimkan kode OTP yang baru Anda terima. Petugas kami akan memprosesnya.",options:["Kemungkinan mencurigakan","Pasti aman"],answer:0,why:"Kode OTP bersifat rahasia dan tidak boleh dibagikan kepada orang lain, termasuk pihak yang mengaku sebagai petugas."},
+    {sender:"Rekan kerja",meta:"Email · Contoh fiktif",body:"Saya mengirim lampiran yang tidak kita bahas sebelumnya. Tolong aktifkan fitur makro agar dokumen dapat dibaca.",options:["Perlu verifikasi melalui kanal lain","Aman karena dari rekan"],answer:0,why:"Permintaan mengaktifkan makro pada lampiran tak terduga berisiko. Konfirmasi langsung kepada pengirim melalui kanal berbeda sebelum membuka file."},
+    {sender:"Informasi Kampus",meta:"Pengumuman · Contoh fiktif",body:"Jadwal seminar telah diperbarui. Periksa pengumuman di situs resmi kampus yang biasa Anda akses.",options:["Relatif wajar, tetap verifikasi bila ragu","Pasti phishing"],answer:0,why:"Pesan mengarahkan pengguna ke situs resmi yang diakses secara mandiri dan tidak meminta informasi rahasia. Konteks dan keaslian pengirim tetap penting."}
+  ];
+  let index = 0, selected = null, answered = false, score = 0, mode = "Latihan";
+  const $ = id => document.getElementById(id);
+
+  function showTab(name) {
+    document.querySelectorAll(".panel").forEach(p => p.classList.toggle("active", p.id === name));
+    document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+    if (name === "progress") renderStats();
+    window.scrollTo({top: document.querySelector(".tabs").getBoundingClientRect().top + window.scrollY - 12, behavior:"smooth"});
+  }
+
+  function renderQuestion() {
+    const q = questions[index];
+    selected = null; answered = false;
+    $("counter").textContent = `Soal ${index + 1} dari ${questions.length}`;
+    $("progressBar").style.width = `${(index / questions.length) * 100}%`;
+    $("feedback").className = "feedback";
+    $("feedback").textContent = "";
+    $("nextBtn").disabled = true;
+    $("nextBtn").textContent = index === questions.length - 1 ? "Lihat hasil →" : "Jawaban berikutnya →";
+    $("questionArea").innerHTML = `
+      <h3>${q.sender}</h3>
+      <div class="message"><div class="sender">${q.sender}</div><div class="meta">${q.meta}</div><div class="body">${q.body}</div></div>
+      <p><strong>Bagaimana kamu menilai pesan ini?</strong></p>
+      <div class="options">${q.options.map((o,i)=>`<button class="option" data-choice="${i}">${o}</button>`).join("")}</div>
+    `;
+    document.querySelectorAll(".option").forEach(b => b.addEventListener("click", () => chooseAnswer(Number(b.dataset.choice))));
+  }
+
+  function chooseAnswer(choice) {
+    if (answered) return;
+    selected = choice; answered = true;
+    const q = questions[index];
+    document.querySelectorAll(".option").forEach((b,i) => { b.disabled = true; if (i === choice) b.classList.add("selected"); });
+    const correct = choice === q.answer;
+    if (correct) score++;
+    const f = $("feedback");
+    f.className = `feedback show ${correct ? "good" : "bad"}`;
+    f.innerHTML = `<strong>${correct ? "Tepat!" : "Belum tepat."}</strong> ${q.why}`;
+    $("nextBtn").disabled = false;
+    $("progressBar").style.width = `${((index + 1) / questions.length) * 100}%`;
+  }
+
+  function nextQuestion() {
+    if (!answered) return;
+    if (index < questions.length - 1) { index++; renderQuestion(); }
+    else finishQuiz();
+  }
+
+  function finishQuiz() {
+    const pct = Math.round(score / questions.length * 100);
+    let stats = JSON.parse(localStorage.getItem("phishAwareStats") || '{"attempts":0,"best":null,"last":null}');
+    stats.attempts++; stats.last = pct; stats.best = stats.best === null ? pct : Math.max(stats.best,pct);
+    localStorage.setItem("phishAwareStats", JSON.stringify(stats));
+    $("quizArea").style.display = "none";
+    $("quizResult").className = "result show";
+    $("quizResult").innerHTML = `<div class="result-box"><div class="score">${pct}%</div><h3>Kuis selesai!</h3><p>Jawaban benar: ${score} dari ${questions.length} soal.</p><div class="result-list"><strong>Langkah berikutnya:</strong><ul><li>Periksa identitas pengirim melalui kanal lain jika ragu.</li><li>Jangan pernah membagikan kata sandi, PIN, atau OTP.</li><li>Hindari membuka tautan atau lampiran yang tidak diharapkan.</li></ul></div><button class="btn" onclick="restartQuiz()">Coba lagi</button> <button class="btn outline" onclick="showTab('progress')">Lihat hasil saya</button></div>`;
+    renderStats();
+  }
+
+  function restartQuiz() {
+    index = 0; score = 0;
+    $("quizArea").style.display = "block";
+    $("quizResult").className = "result";
+    renderQuestion();
+  }
+
+  function renderStats() {
+    const s = JSON.parse(localStorage.getItem("phishAwareStats") || '{"attempts":0,"best":null,"last":null}');
+    $("lastScore").textContent = s.last === null ? "—" : `${s.last}%`;
+    $("bestScore").textContent = s.best === null ? "—" : `${s.best}%`;
+    $("attempts").textContent = s.attempts;
+    $("lastScoreText").textContent = s.last === null ? "Selesaikan kuis untuk melihat skor." : "Hasil kuis terakhir di browser ini.";
+  }
+
+  function clearResults() {
+    if (confirm("Hapus semua hasil latihan yang tersimpan di browser ini?")) {
+      localStorage.removeItem("phishAwareStats"); renderStats();
+    }
+  }
+
+  function assessMessage() {
+    const selectedRisks = [...document.querySelectorAll(".risk:checked")];
+    const raw = selectedRisks.reduce((sum,el)=>sum+Number(el.value),0);
+    const score = Math.min(100,raw);
+    let title, detail;
+    if (selectedRisks.some(el => el.value === "25")) {
+      title = "Risiko tinggi — jangan bagikan data rahasia";
+      detail = "Permintaan PIN, kata sandi, atau OTP adalah tanda bahaya kuat. Hentikan interaksi dan konfirmasi lewat kanal resmi.";
+    } else if (score >= 40) {
+      title = "Perlu kewaspadaan tinggi";
+      detail = "Beberapa indikator muncul. Jangan klik tautan atau membuka lampiran; verifikasi pengirim melalui kanal yang sudah dikenal.";
+    } else if (score > 0) {
+      title = "Perlu pemeriksaan lebih lanjut";
+      detail = "Ada indikator yang patut diperiksa. Skor rendah bukan jaminan bahwa pesan aman.";
+    } else {
+      title = "Belum ada indikator yang dipilih";
+      detail = "Tidak ada indikator yang ditandai. Ini tidak berarti pesan pasti aman; periksa konteks dan keaslian pengirim.";
+    }
+    const box = $("assessmentResult");
+    box.className = "score-card card show";
+    box.innerHTML = `<div class="small">Indikator risiko terpilih</div><div class="score">${score}/100</div><div class="score-meter"><span style="width:${score}%"></span></div><h3>${title}</h3><p>${detail}</p><p class="small">Kanal yang dipilih: ${escapeHtml($("channel").value)}${$("sender").value.trim() ? " · Nama pengirim: "+escapeHtml($("sender").value.trim()) : ""}</p>`;
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  renderQuestion();
+  renderStats();
+</script>
+</body>
+</html>
